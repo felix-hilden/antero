@@ -1,2 +1,5 @@
 # PyCharm project files
 .idea/*
+
+# pip installation
+*.egg-info/*
