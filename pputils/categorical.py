@@ -128,22 +128,22 @@ class NanHotEncoder(OneHotEncoder):
 
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
         nans = np.isnan(labels)
-        encoded = super(NanHotEncoder, self).transform_from_labels(labels[~nans].astype(int))
+        encoded = super().transform_from_labels(labels[~nans].astype(int))
         return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
-        inverted = super(NanHotEncoder, self).inverse_to_labels(encoded[~nans].astype(int))
+        inverted = super().inverse_to_labels(encoded[~nans].astype(int))
         return _mask_assign(encoded.shape[:-1], ~nans, inverted)
 
     def transform_to_labels(self, samples: pd.Series) -> np.ndarray:
         mask = samples.isnull() | ~samples.isin(self.categories)
-        labels = super(NanHotEncoder, self).transform_to_labels(samples[~mask].values)
+        labels = super().transform_to_labels(samples[~mask].values)
         return _mask_assign(samples.values.shape, ~mask.values, labels)
 
     def inverse_from_labels(self, labels: np.ndarray) -> pd.Series:
         series = pd.Series(labels.ravel())
-        inverted = super(NanHotEncoder, self).inverse_from_labels(series.dropna().values.astype(int))
+        inverted = super().inverse_from_labels(series.dropna().values.astype(int))
         series[~series.isnull()] = inverted
         return series
 
@@ -177,12 +177,12 @@ class CatHotEncoder(OneHotEncoder):
 
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
         nans = (labels == -1)
-        encoded = super(CatHotEncoder, self).transform_from_labels(labels[~nans].astype(int))
+        encoded = super().transform_from_labels(labels[~nans].astype(int))
         return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
-        inverted = super(CatHotEncoder, self).inverse_to_labels(encoded[~nans].astype(int))
+        inverted = super().inverse_to_labels(encoded[~nans].astype(int))
         return _mask_assign(encoded.shape[:-1], ~nans, inverted, init=-1)
 
     def transform_to_labels(self, samples: pd.Series) -> np.ndarray:
