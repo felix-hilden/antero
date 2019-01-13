@@ -115,7 +115,7 @@ def _mask_assign(shape: tuple, mask: np.ndarray, values: np.ndarray, init: float
 
 class NanHotEncoder(OneHotEncoder):
     """
-    One-hot encoder that handles NaN values.
+    One-hot encoder that handles NaN values. Uses pd.isnull to find NaNs.
 
     Does handle NaN data, ignores unseen categories (all zero) and inverts all zero rows.
     Only accepts and returns 1-dimensional data (pd.Series) as samples (categories).
@@ -131,6 +131,10 @@ class NanHotEncoder(OneHotEncoder):
 
     def __repr__(self):
         return 'Nan' + super().__repr__()[3:]
+
+    def fit(self, samples: np.ndarray) -> 'NanHotEncoder':
+        super().fit(samples[~pd.isnull(samples)])
+        return self
 
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
         nans = np.isnan(labels)
@@ -181,7 +185,7 @@ class CatHotEncoder(OneHotEncoder):
         return 'Cat' + super().__repr__()[3:]
 
     def fit(self, samples: pd.Series) -> 'CatHotEncoder':
-        super(CatHotEncoder, self).fit(samples.cat.categories)
+        super().fit(samples.cat.categories)
         return self
 
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:

@@ -41,10 +41,13 @@ class TestOneHotEncoder(unittest.TestCase):
 
 
 class TestNanHotEncoder(unittest.TestCase):
-    categories = np.array(['a', 'b', 'c', 'd'])
+    categories = np.array(['a', 'b', 'c', 'd', np.nan, np.nan], dtype=object)
 
     def setUp(self):
         self.nh = NanHotEncoder().fit(self.categories)
+
+    def test_fit(self):
+        self.assertTrue(np.all(array_equal(self.nh.categories, self.categories[:-2])))
 
     def test_transform_to_labels(self):
         samples = pd.Series(['a', 'c', np.nan, 'c', 'd', np.nan, 'a', 'd'])
