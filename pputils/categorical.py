@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from pputils.exceptions import ProgrammingError
+
 
 class OneHotEncoder:
     """
@@ -22,7 +24,7 @@ class OneHotEncoder:
     @property
     def categories(self) -> np.ndarray:
         if self._categories is None:
-            raise ValueError('Encoder not fitted!')
+            raise ProgrammingError('Encoder not fitted!')
         return self._categories
 
     @categories.setter
@@ -150,3 +152,48 @@ class NanHotEncoder(OneHotEncoder):
 
     def inverse(self, encoded: np.ndarray) -> pd.Series:
         return self.inverse_from_labels(self.inverse_to_labels(encoded))
+
+
+class CatHotEncoder(OneHotEncoder):
+    """
+    One-hot encoder that handles NaN values built around Pandas Categorical type and conventions.
+
+    Does handle NaN data, ignores unseen categories (all zero) and inverts all zero rows.
+    Only accepts and returns 1-dimensional data (pd.Series) as samples (categories).
+
+    Example:
+        >>> s = pd.Series(pd.Categorical([np.nan, 'c', 'd', 'a', 'b', 'c', 'c']))
+        >>> ch = CatHotEncoder()
+        >>> ch.fit(s)
+        >>> ch.transform(s)
+        >>> ch.inverse(np.array([[0, 0, 0, 0], [0, 0, 1, 0]]))
+    """
+    def __init__(self):
+        super().__init__()
+
+    def fit(self, samples: pd.Series) -> 'CatHotEncoder':
+        super(CatHotEncoder, self).fit(samples.cat.categories)
+        return self
+
+    def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
+        nans = (labels == -1)
+        encoded = super(CatHotEncoder, self).transform_from_labels(labels[~nans].astype(int))
+        return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+
+    def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
+        nans = np.sum(encoded, axis=-1) == 0
+        inverted = super(CatHotEncoder, self).inverse_to_labels(encoded[~nans].astype(int))
+        return _mask_assign(encoded.shape[:-1], ~nans, inverted, init=-1)
+
+    def transform_to_labels(self, samples: pd.Series) -> np.ndarray:
+        raise ProgrammingError('Redundant action for pd.Categorical. Use series.cat.codes instead.')
+
+    def inverse_from_labels(self, labels: np.ndarray) -> pd.Series:
+        raise ProgrammingError('Redundant action for pd.Categorical. Use pd.Categorical.from_codes instead.')
+
+    def transform(self, samples: pd.Series) -> np.ndarray:
+        return self.transform_from_labels(samples.cat.set_categories(self.categories).cat.codes)
+
+    def inverse(self, encoded: np.ndarray) -> pd.Series:
+        codes = self.inverse_to_labels(encoded)
+        return pd.Series(pd.Categorical.from_codes(codes, self.categories))
