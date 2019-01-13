@@ -33,7 +33,7 @@ class OneHotEncoder:
     def n_categories(self) -> int:
         return len(self.categories)
 
-    def fit(self, samples: np.ndarray) -> None:
+    def fit(self, samples: np.ndarray) -> 'OneHotEncoder':
         """
         Fit the encoder with the unique elements in categories.
 
@@ -41,6 +41,7 @@ class OneHotEncoder:
         :return: None
         """
         self.categories = np.unique(samples)
+        return self
 
     def transform(self, samples: np.ndarray) -> np.ndarray:
         """
