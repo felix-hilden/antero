@@ -35,6 +35,9 @@ class OneHotEncoder:
     def n_categories(self) -> int:
         return len(self.categories)
 
+    def __repr__(self):
+        return 'OneHotEncoder with categories:\n' + str(self.categories)
+
     def fit(self, samples: np.ndarray) -> 'OneHotEncoder':
         """
         Fit the encoder with the unique elements in categories.
@@ -126,6 +129,9 @@ class NanHotEncoder(OneHotEncoder):
     def __init__(self):
         super().__init__()
 
+    def __repr__(self):
+        return 'Nan' + super().__repr__()[3:]
+
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
         nans = np.isnan(labels)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
@@ -170,6 +176,9 @@ class CatHotEncoder(OneHotEncoder):
     """
     def __init__(self):
         super().__init__()
+
+    def __repr__(self):
+        return 'Cat' + super().__repr__()[3:]
 
     def fit(self, samples: pd.Series) -> 'CatHotEncoder':
         super(CatHotEncoder, self).fit(samples.cat.categories)
