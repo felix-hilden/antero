@@ -101,6 +101,12 @@ class OneHotEncoder:
         return self.inverse_from_labels(self.inverse_to_labels(encoded))
 
 
+def _mask_assign(shape: tuple, mask: np.ndarray, values: np.ndarray, init: float=np.nan) -> np.ndarray:
+    array = np.full(shape, init)
+    array[mask] = values
+    return array
+
+
 class NanHotEncoder(OneHotEncoder):
     """
     One-hot encoder that handles NaN values.
@@ -117,26 +123,20 @@ class NanHotEncoder(OneHotEncoder):
     def __init__(self):
         super().__init__()
 
-    @staticmethod
-    def _mask_assign(shape: tuple, mask: np.ndarray, values: np.ndarray, init: float=np.nan) -> np.ndarray:
-        array = np.full(shape, init)
-        array[mask] = values
-        return array
-
     def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
         nans = np.isnan(labels)
         encoded = super(NanHotEncoder, self).transform_from_labels(labels[~nans].astype(int))
-        return self._mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+        return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
         inverted = super(NanHotEncoder, self).inverse_to_labels(encoded[~nans].astype(int))
-        return self._mask_assign(encoded.shape[:-1], ~nans, inverted)
+        return _mask_assign(encoded.shape[:-1], ~nans, inverted)
 
     def transform_to_labels(self, samples: pd.Series) -> np.ndarray:
         mask = samples.isnull() | ~samples.isin(self.categories)
         labels = super(NanHotEncoder, self).transform_to_labels(samples[~mask].values)
-        return self._mask_assign(samples.values.shape, ~mask.values, labels)
+        return _mask_assign(samples.values.shape, ~mask.values, labels)
 
     def inverse_from_labels(self, labels: np.ndarray) -> pd.Series:
         series = pd.Series(labels.ravel())
