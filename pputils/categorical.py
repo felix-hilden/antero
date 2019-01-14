@@ -76,7 +76,7 @@ class OneHotEncoder:
         :param labels: np.ndarray
         :return: encoding
         """
-        return np.eye(self.n_categories)[labels]
+        return np.eye(self.n_categories, dtype=np.uint8)[labels]
 
     def inverse_from_labels(self, labels: np.ndarray) -> np.ndarray:
         """
@@ -143,7 +143,7 @@ class NanHotEncoder(OneHotEncoder):
         nans = np.isnan(labels)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
         encoded = _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
-        return pd.DataFrame(data=encoded, columns=self.categories)
+        return pd.DataFrame(data=encoded.astype(np.uint8), columns=self.categories)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
@@ -199,7 +199,7 @@ class CatHotEncoder(OneHotEncoder):
         nans = (labels == -1)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
         encoded = _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
-        return pd.DataFrame(data=encoded, columns=self.categories)
+        return pd.DataFrame(data=encoded.astype(np.uint8), columns=self.categories)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
