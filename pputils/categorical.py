@@ -136,10 +136,14 @@ class NanHotEncoder(OneHotEncoder):
         super().fit(samples[~pd.isnull(samples)])
         return self
 
-    def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
+    def transform_from_labels(self, labels: np.ndarray) -> pd.DataFrame:
+        if len(labels.shape) > 1:
+            raise ProgrammingError('Encoder only accepts 1-dimensional data.')
+
         nans = np.isnan(labels)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
-        return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+        encoded = _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+        return pd.DataFrame(data=encoded, columns=self.categories)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
@@ -157,7 +161,7 @@ class NanHotEncoder(OneHotEncoder):
         series[~series.isnull()] = inverted
         return series
 
-    def transform(self, samples: pd.Series) -> np.ndarray:
+    def transform(self, samples: pd.Series) -> pd.DataFrame:
         return self.transform_from_labels(self.transform_to_labels(samples))
 
     def inverse(self, encoded: np.ndarray) -> pd.Series:
@@ -189,6 +193,9 @@ class CatHotEncoder(OneHotEncoder):
         return self
 
     def transform_from_labels(self, labels: np.ndarray) -> pd.DataFrame:
+        if len(labels.shape) > 1:
+            raise ProgrammingError('Encoder only accepts 1-dimensional data.')
+
         nans = (labels == -1)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
         encoded = _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)

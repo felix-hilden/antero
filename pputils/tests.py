@@ -55,9 +55,14 @@ class TestNanHotEncoder(unittest.TestCase):
         self.assertTrue(np.all(array_equal(self.nh.transform_to_labels(samples), result)))
 
     def test_transform_from_labels(self):
-        labels = np.array([[0, np.nan], [np.nan, 3]])
-        result = np.array([[[1, 0, 0, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 1]]])
-        self.assertTrue(np.all(array_equal(self.nh.transform_from_labels(labels), result)))
+        labels = np.array([0, np.nan, np.nan, 3])
+        result = np.array([[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]])
+        self.assertTrue(np.all(array_equal(self.nh.transform_from_labels(labels).values, result)))
+
+    def test_transform_from_labels_dim(self):
+        labels = np.array([[0, -1], [-1, 3]])
+        with self.assertRaises(ProgrammingError):
+            self.nh.transform_from_labels(labels)
 
     def test_inverse_from_labels(self):
         labels = np.array([0, 2, np.nan, 2, 3, np.nan, 0, 3])
@@ -72,7 +77,7 @@ class TestNanHotEncoder(unittest.TestCase):
     def test_novel_classes(self):
         samples = pd.Series(['a', 'f', np.nan, 'd'])
         result = np.array([[1, 0, 0, 0], [0, 0, 0, 0],  [0, 0, 0, 0], [0, 0, 0, 1]])
-        self.assertTrue(np.all(array_equal(self.nh.transform(samples), result)))
+        self.assertTrue(np.all(array_equal(self.nh.transform(samples).values, result)))
 
 
 class TestCatHotEncoder(unittest.TestCase):
@@ -89,6 +94,11 @@ class TestCatHotEncoder(unittest.TestCase):
         labels = np.array([0, -1, -1, 3])
         result = np.array([[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]])
         self.assertTrue(np.all(array_equal(self.ch.transform_from_labels(labels).values, result)))
+
+    def test_transform_from_labels_dim(self):
+        labels = np.array([[0, -1], [-1, 3]])
+        with self.assertRaises(ProgrammingError):
+            self.ch.transform_from_labels(labels)
 
     def test_inverse_from_labels(self):
         with self.assertRaises(ProgrammingError):
