@@ -188,10 +188,11 @@ class CatHotEncoder(OneHotEncoder):
         super().fit(samples.cat.categories)
         return self
 
-    def transform_from_labels(self, labels: np.ndarray) -> np.ndarray:
+    def transform_from_labels(self, labels: np.ndarray) -> pd.DataFrame:
         nans = (labels == -1)
         encoded = super().transform_from_labels(labels[~nans].astype(int))
-        return _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+        encoded = _mask_assign(labels.shape + (self.n_categories,), ~nans, encoded, init=0)
+        return pd.DataFrame(data=encoded, columns=self.categories)
 
     def inverse_to_lables(self, encoded: np.ndarray) -> np.ndarray:
         nans = np.sum(encoded, axis=-1) == 0
@@ -204,7 +205,7 @@ class CatHotEncoder(OneHotEncoder):
     def inverse_from_labels(self, labels: np.ndarray) -> pd.Series:
         raise ProgrammingError('Redundant action for pd.Categorical. Use pd.Categorical.from_codes instead.')
 
-    def transform(self, samples: pd.Series) -> np.ndarray:
+    def transform(self, samples: pd.Series) -> pd.DataFrame:
         return self.transform_from_labels(samples.cat.set_categories(self.categories).cat.codes)
 
     def inverse(self, encoded: np.ndarray) -> pd.Series:
