@@ -40,7 +40,7 @@ class OneHotEncoder:
 
     def fit(self, samples: np.ndarray) -> 'OneHotEncoder':
         """
-        Fit the encoder with the unique elements in categories.
+        Fit the encoder with the unique elements in samples.
 
         :param samples: np.ndarray
         :return: None
