@@ -86,9 +86,9 @@ class TestCatHotEncoder(unittest.TestCase):
             self.ch.transform_to_labels(self.series)
 
     def test_transform_from_labels(self):
-        labels = np.array([[0, -1], [-1, 3]])
-        result = np.array([[[1, 0, 0, 0], [0, 0, 0, 0]], [[0, 0, 0, 0], [0, 0, 0, 1]]])
-        self.assertTrue(np.all(array_equal(self.ch.transform_from_labels(labels), result)))
+        labels = np.array([0, -1, -1, 3])
+        result = np.array([[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1]])
+        self.assertTrue(np.all(array_equal(self.ch.transform_from_labels(labels).values, result)))
 
     def test_inverse_from_labels(self):
         with self.assertRaises(ProgrammingError):
@@ -102,7 +102,7 @@ class TestCatHotEncoder(unittest.TestCase):
     def test_novel_classes(self):
         samples = pd.Series(pd.Categorical(['a', 'f', np.nan, 'd']))
         result = np.array([[1, 0, 0, 0], [0, 0, 0, 0],  [0, 0, 0, 0], [0, 0, 0, 1]])
-        self.assertTrue(np.all(array_equal(self.ch.transform(samples), result)))
+        self.assertTrue(np.all(array_equal(self.ch.transform(samples).values, result)))
 
 
 if __name__ == '__main__':
