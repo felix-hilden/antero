@@ -199,10 +199,10 @@ class CatHotEncoder(OneHotEncoder):
         inverted = super().inverse_to_labels(encoded[~nans].astype(int))
         return _mask_assign(encoded.shape[:-1], ~nans, inverted, init=-1)
 
-    def transform_to_labels(self, samples: pd.Series) -> np.ndarray:
+    def transform_to_labels(self, samples: pd.Series):
         raise ProgrammingError('Redundant action for pd.Categorical. Use series.cat.codes instead.')
 
-    def inverse_from_labels(self, labels: np.ndarray) -> pd.Series:
+    def inverse_from_labels(self, labels: np.ndarray):
         raise ProgrammingError('Redundant action for pd.Categorical. Use pd.Categorical.from_codes instead.')
 
     def transform(self, samples: pd.Series) -> pd.DataFrame:
