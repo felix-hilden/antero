@@ -1,9 +1,11 @@
-# pputils
+# Antero
 
-Pre-processing utilities for data analytics and ML tasks.
-So far only one-hot encoders for various tasks.
+Assorted collection of data analysis and machine learning related things.
+
+### Categorical
+
+Three classes for one-hot encoding of various sorts.
 
 * OneHotEncoder: simple one-hot encoder.
-* NanHotEncoder: encoder capable of transforming arrays with NaN values and inverting all-zero rows back to NaN values.
-Unseen categories are treated as NaNs.
-* CatHotEncoder: encoder built around the Pandas Categorical specification for ease of use. Similar to NanHotEncoder.
+* NanHotEncoder: capable of transforming NaN values and inverting all-zero rows. Unseen categories are treated as NaNs.
+* CatHotEncoder: built around Pandas Categorical for ease of use. Similar to NanHotEncoder.
