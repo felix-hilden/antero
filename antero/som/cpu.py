@@ -47,6 +47,7 @@ class SelfOrganisingMap(_BaseSOM):
 
         for i in tqdm(range(epochs)):
             epoch = self.epochs + i
+            rate = self.learning_rate(epoch)
             for batch in range(x.shape[0] // batch_size):
                 data = x[batch*batch_size:(batch+1)*batch_size]
                 diff = self.weights - data
@@ -55,7 +56,7 @@ class SelfOrganisingMap(_BaseSOM):
                     np.argmin(dist.reshape((-1, data.shape[0])), axis=0), self.shape
                 ))
                 factor = self.neighbourhood_f(self._idx_distances(winner), epoch)
-                update = diff * self.learning_rate(epoch) * np.expand_dims(factor, axis=-1)
+                update = diff * rate * np.expand_dims(factor, axis=-1)
                 self._weights -= self._initial_lr * np.sum(update, axis=-2, keepdims=True)
 
         # Record elapsed epochs
