@@ -2,12 +2,12 @@
 
 Assorted collection of data analysis and machine learning related things.
 
-### Self-organising map
+## Self-organising map
 Minimal implementation of a self-organising map for both a CPU (NumPy) and a GPU (Tensorflow).
 The implementations are completely interchangeable, only requiring a change in the import statement.
 To use this SOM, no knowledge of Tensorflow is required. All data is consumed using NumPy arrays.
 
-##### Key features
+### Key features
 * exponentially decreasing **learning rate** and **Gaussian neighbourhood** functions are constructed
     based on map dimensions and estimated maximum number of training epochs
 * **mini-batch training** - optionally aggregate updates for a number of training steps before changing weights
@@ -19,7 +19,7 @@ To use this SOM, no knowledge of Tensorflow is required. All data is consumed us
 though visualisations are only supported for two-dimensional maps.
 * **built-in serialisation** - just call `save` and `load`
 
-##### Complete example
+### Complete example
 ```
 from antero.som.cpu import SelfOrganisingMap
 from antero.som.visual import heatmap, umatrix
@@ -45,7 +45,7 @@ heatmap(som.project(x), som.shape, labels=y)
 print('Topographic error:', topographic_error(x, som.weights))
 ```
 
-### Categorical
+## Categorical
 
 Three classes for one-hot encoding of various sorts.
 
