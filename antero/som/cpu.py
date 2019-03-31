@@ -46,9 +46,9 @@ class SelfOrganisingMap(_BaseSOM):
             raise ValueError('Bad batch_size, last batch would be incomplete!')
 
         for i in tqdm(range(epochs)):
+            epoch = self.epochs + i
             for batch in range(x.shape[0] // batch_size):
                 data = x[batch*batch_size:(batch+1)*batch_size]
-                epoch = self.epochs + i
                 diff = self.weights - data
                 dist = np.sum(diff ** 2, axis=-1, keepdims=True)
                 winner = np.array(np.unravel_index(
