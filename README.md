@@ -3,11 +3,23 @@
 Assorted collection of data analysis and machine learning related things.
 
 ### Self-organising map
-Minimal implementation of a self-organising map for both CPU (NumPy) and GPU (Tensorflow).
-Measures and visualisations are also included.
-The map itself can span any number of dimensions, but visualisations are only supported
-for the most common two-dimensional case.
+Minimal implementation of a self-organising map for both a CPU (NumPy) and a GPU (Tensorflow).
+The implementations are completely interchangeable, only requiring a change in the import statement.
+To use this SOM, no knowledge of Tensorflow is required. All data is consumed using NumPy arrays.
 
+##### Key features
+* exponentially decreasing **learning rate** and **Gaussian neighbourhood** functions are constructed
+    based on map dimensions and estimated maximum number of training epochs
+* **mini-batch training** - optionally aggregate updates for a number of training steps before changing weights
+* **visualisations and measures** - easy ways to view and measure results
+    * U-matrix - visualise or measure map topology by average distance from a node to its neighbours
+    * heatmap - visualise where input data is projected on the map, if labels are passed creates a figure for each class
+    * topological error - percentage of best-matching units for which the second-best-matching unit is not a neighbour
+* **n-dimensional** - any number of map dimensions can be specified,
+though visualisations are only supported for two-dimensional maps.
+* **built-in serialisation** - just call `save` and `load`
+
+##### Complete example
 ```
 from antero.som.cpu import SelfOrganisingMap
 from antero.som.visual import heatmap, umatrix
