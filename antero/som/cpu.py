@@ -30,7 +30,7 @@ class SelfOrganisingMap(_BaseSOM):
         diff = self.indices - points.reshape(self._neighbour_shape)
         return np.linalg.norm(diff, axis=0)
 
-    def train(self, x: np.ndarray, epochs: int, batch_size: int = None) -> None:
+    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1) -> None:
         """
         Train SOM with batches. Count epochs starting from first train call.
 
