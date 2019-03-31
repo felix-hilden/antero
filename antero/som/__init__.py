@@ -67,20 +67,32 @@ class _BaseSOM:
             np.argmin(dist.reshape((-1, data.shape[0])), axis=0), self.shape
         ))
 
-    def to_pickle(self, path: Path) -> None:
+    def save(self, path: Path) -> None:
         """
         Save self as pickled object.
 
-        :param path:
+        :param path: file name
         :return: None
         """
+        d = {
+            'w': self._weights,
+            'e': self._epochs,
+            'm': self._max_epochs,
+            'r': self._initial_lr,
+            'i': self._initialiser
+        }
         with open(str(path), 'wb') as f:
-            pickle.dump(self, f)
+            pickle.dump(d, f)
 
     @classmethod
-    def from_pickle(cls, path: Path) -> '_BaseSOM':
+    def load(cls, path: Path) -> '_BaseSOM':
         with open(str(path), 'rb') as f:
-            return pickle.load(f)
+            d = pickle.load(f)
+
+        som = cls(d['w'].shape[:-2], d['w'].shape[-1], max_epochs=d['m'], init=d['i'], learning_rate=d['r'])
+        som._weights = d['w']
+        som._epochs = d['e']
+        return som
 
     def __repr__(self):
         return ''.join(str(s) for s in [

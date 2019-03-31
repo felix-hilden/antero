@@ -20,21 +20,25 @@ def _make_neighbourhood(shape: tuple, max_epochs: int) -> callable:
 
 
 class SelfOrganisingMap(_BaseSOM):
+    def _init_weights(self):
+        if self._initialiser == 'uniform':
+            self._weights = np.random.rand(*self.shape, 1, self.features)
+        elif self._initialiser == 'normal':
+            self._weights = np.random.normal(size=(*self.shape, 1, self.features))
+
+    def _init_members(self):
+        self.neighbourhood = _make_neighbourhood(self.shape, self.max_epochs)
+        self.learning_rate = _make_learning_rate(self.max_epochs)
+        self.indices = np.expand_dims(np.indices(self.shape), axis=-1)
+
     def _on_first_train(self) -> None:
         """
         Initialise functions, indices and weights.
 
         :return: None
         """
-        self.neighbourhood = _make_neighbourhood(self.shape, self.max_epochs)
-        self.learning_rate = _make_learning_rate(self.max_epochs)
-
-        self.indices = np.expand_dims(np.indices(self.shape), axis=-1)
-
-        if self._initialiser == 'uniform':
-            self._weights = np.random.rand(*self.shape, 1, self.features)
-        elif self._initialiser == 'normal':
-            self._weights = np.random.normal(size=(*self.shape, 1, self.features))
+        self._init_members()
+        self._init_weights()
 
     def _idx_distances(self, points: np.ndarray) -> np.ndarray:
         """
@@ -77,3 +81,9 @@ class SelfOrganisingMap(_BaseSOM):
 
         # Record elapsed epochs
         self._epochs += epochs
+
+    @classmethod
+    def load(cls, path) -> 'SelfOrganisingMap':
+        som = super().load(path)
+        som._init_members()
+        return som
