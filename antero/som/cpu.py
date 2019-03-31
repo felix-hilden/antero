@@ -4,14 +4,30 @@ from tqdm import tqdm
 from antero.som import _BaseSOM
 
 
-class SelfOrganisingMap(_BaseSOM):
-    def _on_first_train(self):
-        self.neighbourhood_f = lambda r, t: np.exp(
-            - (2 * r / max(self.shape)) ** 2
-            * (self.max_epochs / (self.max_epochs - t)) ** 3
-        )
+def _make_learning_rate(max_epochs: int) -> callable:
+    def _learning_rate(t: int) -> float:
+        return np.exp(-4 * t / max_epochs)
+    return _learning_rate
 
-        self.learning_rate = lambda t: np.exp(-4 * t / self.max_epochs)
+
+def _make_neighbourhood(shape: tuple, max_epochs: int) -> callable:
+    def _neighbourhood(r: np.ndarray, t: int):
+        return np.exp(
+            - (2 * r / max(shape)) ** 2
+            * (max_epochs / (max_epochs - t)) ** 3
+        )
+    return _neighbourhood
+
+
+class SelfOrganisingMap(_BaseSOM):
+    def _on_first_train(self) -> None:
+        """
+        Initialise functions, indices and weights.
+
+        :return: None
+        """
+        self.neighbourhood = _make_neighbourhood(self.shape, self.max_epochs)
+        self.learning_rate = _make_learning_rate(self.max_epochs)
 
         self.indices = np.expand_dims(np.indices(self.shape), axis=-1)
 
@@ -55,7 +71,7 @@ class SelfOrganisingMap(_BaseSOM):
                 winner = np.array(np.unravel_index(
                     np.argmin(dist.reshape((-1, data.shape[0])), axis=0), self.shape
                 ))
-                factor = self.neighbourhood_f(self._idx_distances(winner), epoch)
+                factor = self.neighbourhood(self._idx_distances(winner), epoch)
                 update = diff * rate * np.expand_dims(factor, axis=-1)
                 self._weights -= self._initial_lr * np.sum(update, axis=-2, keepdims=True)
 
