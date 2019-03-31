@@ -36,7 +36,7 @@ class SelfOrganisingMap(_BaseSOM):
 
         :param x: training data
         :param epochs: number of epochs to train
-        :param batch_size: train in mini batches, whole data set per step if None
+        :param batch_size: number of training examples per step
         :return: None
         """
         if self._weights is None:
@@ -48,7 +48,7 @@ class SelfOrganisingMap(_BaseSOM):
         for i in tqdm(range(epochs)):
             for batch in range(x.shape[0] // batch_size):
                 data = x[batch*batch_size:(batch+1)*batch_size]
-                epoch = self.epochs + i // x.shape[0]
+                epoch = self.epochs + i
                 diff = self.weights - data
                 dist = np.sum(diff ** 2, axis=-1, keepdims=True)
                 winner = np.array(np.unravel_index(
