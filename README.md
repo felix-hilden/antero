@@ -18,6 +18,7 @@ To use this SOM, no knowledge of Tensorflow is required. All data is consumed us
 * **n-dimensional** - any number of map dimensions can be specified,
 though visualisations are only supported for two-dimensional maps.
 * **built-in serialisation** - just call `save` and `load`
+* **CPU and GPU** - fully interchangeable implementations even saving with one and loading with the other
 
 ### Complete example
 ```
