@@ -90,7 +90,7 @@ class SelfOrganisingMap(_BaseSOM):
         # Initialise all variables
         sess.run(init)
 
-        batches = int(np.ceil(x.shape[0] // batch_size))
+        batches = x.shape[0] // batch_size
         for i in tqdm(range(epochs)):
             epoch = self.epochs + i
             for b in range(batches):
