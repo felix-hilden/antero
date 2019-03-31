@@ -11,6 +11,8 @@ setup(
     zip_safe=True,
     install_requires=[
         'numpy',
-        'pandas'
+        'pandas',
+        'tensorflow',
+        'tqdm',
     ]
 )
