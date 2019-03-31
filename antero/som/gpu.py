@@ -92,9 +92,10 @@ class SelfOrganisingMap(_BaseSOM):
 
         batches = int(np.ceil(x.shape[0] // batch_size))
         for i in tqdm(range(epochs)):
+            epoch = self.epochs + i
             for b in range(batches):
                 sess.run(update_op, feed_dict={
-                    curr_epoch: self.epochs + i
+                    curr_epoch: epoch
                 })
 
         self._weights = sess.run(weights)
