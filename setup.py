@@ -14,5 +14,6 @@ setup(
         'pandas',
         'tensorflow',
         'tqdm',
+        'scipy',
     ]
 )

@@ -1,5 +1,7 @@
 import numpy as np
 
+from scipy.stats import ks_2samp
+
 
 def umatrix(weights: np.ndarray, d: float = 1) -> np.ndarray:
     """
@@ -54,3 +56,20 @@ def topographic_error(data: np.ndarray, weights: np.ndarray, neighbor_radius: fl
     ])
 
     return np.mean(errors)
+
+
+def embedding_accuracy(data: np.ndarray, weights: np.ndarray, alpha: float = 0.05):
+    """
+    Map embedding accuracy. Test whether the weights have a similar distribution to data.
+    Uses scipy.ks_2samp (two-sided, two-sample test) to determine similarity.
+
+    :param data: samples
+    :param weights: SOM weight matrix with shape (..., 1, features)
+    :param alpha: confidence interval
+    :return: embedding accuracy
+    """
+    features = data.shape[-1]
+    w = weights.reshape(-1, features)
+
+    pvals = np.array([ks_2samp(data[:, f], w[:, f])[1] for f in range(features)])
+    return np.mean(pvals > alpha)
