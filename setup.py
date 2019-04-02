@@ -15,5 +15,7 @@ setup(
         'tensorflow',
         'tqdm',
         'scipy',
+        'matplotlib',
+        'seaborn',
     ]
 )
