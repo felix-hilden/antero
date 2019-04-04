@@ -68,3 +68,24 @@ def umatrix(weights: np.ndarray, d: float = 1):
     plt.figure()
     plt.title('U-matrix')
     plt.imshow(_umatrix(weights, d), cmap='binary')
+
+
+def class_pies(indices: np.ndarray, shape: tuple, labels: np.ndarray):
+    """
+    Plot self-organising map as a set of pie charts in terms of labels at each node.
+
+    :param indices: SOM projections
+    :param shape: shape of the map
+    :param labels: true class labels
+    :return: None
+    """
+    heats = _gather_indices_with_labels(indices, labels, shape)
+
+    plt.figure(figsize=(7, 7))
+    plt.suptitle('Class pies')
+    grid = GridSpec(*shape)
+    for y in range(shape[0]):
+        for x in range(shape[1]):
+            plt.subplot(grid[y, x])
+            p, _ = plt.pie(heats[:, y, x], radius=1.4)
+    plt.legend(p, np.arange(0, labels.max()+1), ncol=1)
