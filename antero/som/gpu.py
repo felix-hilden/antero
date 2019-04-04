@@ -29,13 +29,15 @@ class SelfOrganisingMap(_BaseSOM):
         else:
             return tf.convert_to_tensor(self._weights)
 
-    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1) -> None:
+    def train(self, x: np.ndarray, epochs: int,
+              batch_size: int = 1, shuffle: bool = False) -> None:
         """
         Create training graph and train SOM.
 
         :param x: training data
         :param epochs: number of epochs to train
         :param batch_size: number of training examples per step
+        :param shuffle: shuffle data in training
         :return: None
         """
         graph = tf.Graph()
@@ -54,10 +56,13 @@ class SelfOrganisingMap(_BaseSOM):
             weights = tf.get_variable(
                 'weights', (*self.shape, 1, self.features), initializer=self.initialiser, dtype=tf.float64
             )
+            curr_epoch = tf.placeholder(dtype=tf.int64, shape=())
 
             with tf.name_scope('data'):
                 data = tf.data.Dataset.from_tensor_slices(x)
-                data = data.shuffle(buffer_size=10000).repeat(epochs)
+                if shuffle:
+                    data = data.shuffle(buffer_size=10000)
+                data = data.repeat(epochs)
                 data = data.batch(batch_size, drop_remainder=True)
                 data = data.make_one_shot_iterator().get_next()
 
@@ -68,8 +73,6 @@ class SelfOrganisingMap(_BaseSOM):
                 winner_op = tf.convert_to_tensor(tf.unravel_index(w_ix, self.shape))
 
             with tf.name_scope('update'):
-                curr_epoch = tf.placeholder(dtype=tf.int64, shape=())
-
                 idx_diff = indices - tf.reshape(tf.cast(
                     winner_op, dtype=tf.float64
                 ), shape=self._neighbour_shape)

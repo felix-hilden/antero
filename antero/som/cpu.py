@@ -1,6 +1,7 @@
 import numpy as np
 
 from tqdm import tqdm
+from sklearn.utils import shuffle as shuffle_data
 from antero.som import _BaseSOM
 
 
@@ -50,13 +51,15 @@ class SelfOrganisingMap(_BaseSOM):
         diff = self.indices - points.reshape(self._neighbour_shape)
         return np.linalg.norm(diff, axis=0)
 
-    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1) -> None:
+    def train(self, x: np.ndarray, epochs: int,
+              batch_size: int = 1, shuffle: bool = False) -> None:
         """
         Train SOM with batches. Count epochs starting from first train call.
 
         :param x: training data
         :param epochs: number of epochs to train
         :param batch_size: number of training examples per step
+        :param shuffle: shuffle data each epoch
         :return: None
         """
         if self._weights is None:
@@ -68,6 +71,9 @@ class SelfOrganisingMap(_BaseSOM):
         for i in tqdm(range(epochs)):
             epoch = self.epochs + i
             rate = self.learning_rate(epoch)
+            if shuffle:
+                x = shuffle_data(x)
+
             for batch in range(x.shape[0] // batch_size):
                 data = x[batch*batch_size:(batch+1)*batch_size]
                 diff = self.weights - data
