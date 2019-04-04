@@ -34,25 +34,25 @@ class _BaseSOM:
         self._initialiser = init
 
     @property
-    def weights(self):
+    def weights(self) -> np.ndarray:
         if self._weights is None:
             raise ValueError('Map not fitted!')
         return self._weights
 
     @property
-    def shape(self): return self._shape
+    def shape(self) -> tuple: return self._shape
 
     @property
-    def n_nodes(self): return int(np.prod(self.shape))
+    def n_nodes(self) -> int: return int(np.prod(self.shape))
 
     @property
-    def features(self): return self._features
+    def features(self) -> int: return self._features
 
     @property
-    def epochs(self): return self._epochs
+    def epochs(self) -> int: return self._epochs
 
     @property
-    def max_epochs(self): return self._max_epochs
+    def max_epochs(self) -> int: return self._max_epochs
 
     def project(self, data: np.ndarray) -> np.ndarray:
         """
