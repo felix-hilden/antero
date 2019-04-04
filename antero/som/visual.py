@@ -2,6 +2,7 @@ import numpy as np
 import seaborn as sns
 
 from matplotlib import pyplot as plt
+from matplotlib.gridspec import GridSpec
 
 from antero.som.measures import umatrix as _umatrix
 
@@ -45,11 +46,13 @@ def heatmap(indices: np.ndarray, shape: tuple, labels: np.ndarray = None):
     """
     if labels is None:
         plt.figure()
+        plt.title('Heatmap')
         sns.heatmap(_gather_indices(indices, shape), vmin=0, cmap='magma')
     else:
         heats = _gather_indices_with_labels(indices, labels, shape)
         for i in range(heats.shape[0]):
             plt.figure()
+            plt.title('Heatmap %d' % i)
             sns.heatmap(heats[i], vmin=0, cmap='magma')
             plt.pause(0.1)
 
@@ -63,4 +66,5 @@ def umatrix(weights: np.ndarray, d: float = 1):
     :return: None
     """
     plt.figure()
+    plt.title('U-matrix')
     plt.imshow(_umatrix(weights, d), cmap='binary')
