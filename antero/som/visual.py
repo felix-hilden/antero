@@ -76,6 +76,7 @@ def umatrix(som: _BaseSOM, d: float = 1):
 def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray):
     """
     Plot self-organising map as a set of pie charts in terms of labels at each node.
+    Very inefficient for large maps as it produces a subplot for each node.
 
     :param som: self-organising map instance
     :param x: data samples
