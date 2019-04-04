@@ -23,27 +23,24 @@ though visualisations are only supported for two-dimensional maps.
 ### Complete example
 ```
 from antero.som.cpu import SelfOrganisingMap
-from antero.som.visual import heatmap, umatrix
-from antero.som.measures import topographic_error
+from antero.som.visual import heatmap, umatrix, class_pies
+from antero.som.measures import topographic_error, embedding_accuracy
 
-from sklearn.utils import shuffle
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import RobustScaler
 
-# Data
 x, y = load_iris(True)
-x, y = shuffle(x, y)
 x = RobustScaler().fit_transform(x)
 
-# Train
 epochs = 1000
-som = SelfOrganisingMap((20, 20), x.shape[-1], max_epochs=epochs)
-som.train(x, epochs)
+som = SelfOrganisingMap((7, 7), x.shape[-1], max_epochs=epochs)
+som.train(x, epochs, shuffle=True)
 
-# Measure
-umatrix(som.weights)
-heatmap(som.project(x), som.shape, labels=y)
-print('Topographic error:', topographic_error(x, som.weights))
+umatrix(som)
+heatmap(som, x)
+class_pies(som, x, y)
+print('Topographic error:', topographic_error(som, x))
+print('Embedding accuracy:', embedding_accuracy(som, x))
 ```
 
 ## Categorical

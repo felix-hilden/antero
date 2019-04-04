@@ -1,16 +1,18 @@
 import numpy as np
 
 from scipy.stats import ks_2samp
+from antero.som import _BaseSOM
 
 
-def umatrix(weights: np.ndarray, d: float = 1) -> np.ndarray:
+def umatrix(som: _BaseSOM, d: float = 1) -> np.ndarray:
     """
     Generate u-matrix from SOM weights.
 
-    :param weights: SOM weight matrix with shape (..., 1, features)
+    :param som: self-organising map instance
     :param d: maximum distance to considered neighbors
     :return: u-matrix
     """
+    weights = som.weights
     map_shape = weights.shape[:-2]
     distances = np.zeros(map_shape)
     indices = np.indices(map_shape)
@@ -25,21 +27,22 @@ def umatrix(weights: np.ndarray, d: float = 1) -> np.ndarray:
     return distances
 
 
-def topographic_error(data: np.ndarray, weights: np.ndarray, neighbor_radius: float = 1):
+def topographic_error(som: _BaseSOM, x: np.ndarray, neighbor_radius: float = 1):
     """
     Measure the topographic error of a SOM.
     E_t = mean(err(x_i)), where err is 1 if the two best matching units are not adjacent
 
-    :param data: data samples
-    :param weights: SOM weight matrix with shape (..., 1, features)
+    :param som: self-organising map instance
+    :param x: data samples
     :param neighbor_radius: specifies the neighborhood condition
     :return: topographic error
     """
-    n_data = data.shape[0]
+    weights = som.weights
+    n_data = x.shape[0]
     map_shape = weights.shape[:-2]
 
     # Distances from data points to units
-    diff = weights - data
+    diff = weights - x
     dist = np.sum(diff ** 2, axis=-1, keepdims=True)
 
     # Indices to best and second best matching units as [bmus, 2nd bmus]
@@ -58,18 +61,19 @@ def topographic_error(data: np.ndarray, weights: np.ndarray, neighbor_radius: fl
     return np.mean(errors)
 
 
-def embedding_accuracy(data: np.ndarray, weights: np.ndarray, alpha: float = 0.05):
+def embedding_accuracy(som: _BaseSOM, x: np.ndarray, alpha: float = 0.05):
     """
     Map embedding accuracy. Test whether the weights have a similar distribution to data.
     Uses scipy.ks_2samp (two-sided, two-sample test) to determine similarity.
 
-    :param data: samples
-    :param weights: SOM weight matrix with shape (..., 1, features)
+    :param som: self-organising map instance
+    :param x: samples
     :param alpha: confidence interval
     :return: embedding accuracy
     """
-    features = data.shape[-1]
+    features = x.shape[-1]
+    weights = som.weights
     w = weights.reshape(-1, features)
 
-    pvals = np.array([ks_2samp(data[:, f], w[:, f])[1] for f in range(features)])
+    pvals = np.array([ks_2samp(x[:, f], w[:, f])[1] for f in range(features)])
     return np.mean(pvals > alpha)
