@@ -94,3 +94,33 @@ def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
             plt.subplot(grid[iy, ix])
             p, _ = plt.pie(heats[:, iy, ix], radius=1.4)
     plt.legend(p, np.arange(0, y.max()+1), ncol=1)
+
+
+def class_image(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
+    """
+    Create an RGB image of maximum of three classes of inputs.
+    Scale brightness with amount of samples.
+
+    :param som: self-organising map instance
+    :param x: data samples
+    :param y: true class labels
+    :return: None
+    """
+    if y.max() > 2:
+        raise ValueError('Maximum of three classes accepted!')
+
+    indices = som.project(x)
+    heats = _gather_indices_with_labels(indices, y, som.shape)
+    scale = np.max(np.sum(heats, axis=0))
+
+    # Insert heatmaps into red and blue channels
+    image = np.zeros((*som.shape, 3))
+    image[..., 0] = heats[0, ...] / scale
+    image[..., 2] = heats[1, ...] / scale
+
+    if y.max() == 2:
+        image[..., 1] = heats[2, ...] / scale
+
+    plt.figure()
+    plt.title('Class image')
+    plt.imshow(image)
