@@ -8,7 +8,7 @@ from antero.som import _BaseSOM
 from antero.som.measures import umatrix as _umatrix
 
 
-def _gather_indices(indices: np.ndarray, shape: tuple):
+def _gather_indices(indices: np.ndarray, shape: tuple) -> np.ndarray:
     """
     Count occurrence of indices.
 
@@ -21,7 +21,7 @@ def _gather_indices(indices: np.ndarray, shape: tuple):
     return heat
 
 
-def _gather_indices_with_labels(indices: np.ndarray, labels: np.ndarray, shape: tuple):
+def _gather_indices_with_labels(indices: np.ndarray, labels: np.ndarray, shape: tuple) -> np.ndarray:
     """
     Count occurrence of indices per label.
 
@@ -36,7 +36,7 @@ def _gather_indices_with_labels(indices: np.ndarray, labels: np.ndarray, shape: 
     return heats
 
 
-def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None):
+def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
     """
     Produce heatmaps indicating where samples land on a map.
 
@@ -60,7 +60,7 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None):
             plt.pause(0.1)
 
 
-def umatrix(som: _BaseSOM, d: float = 1):
+def umatrix(som: _BaseSOM, d: float = 1) -> None:
     """
     Plot U-matrix.
 
@@ -73,7 +73,7 @@ def umatrix(som: _BaseSOM, d: float = 1):
     plt.imshow(_umatrix(som, d), cmap='binary')
 
 
-def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray):
+def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
     """
     Plot self-organising map as a set of pie charts in terms of labels at each node.
     Very inefficient for large maps as it produces a subplot for each node.
