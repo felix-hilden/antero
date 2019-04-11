@@ -1,39 +1,13 @@
 import numpy as np
 import seaborn as sns
 
+import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 
 from antero.som import _BaseSOM
 from antero.som.measures import umatrix as _umatrix
-
-
-def _gather_indices(indices: np.ndarray, shape: tuple) -> np.ndarray:
-    """
-    Count occurrence of indices.
-
-    :param indices: indices to array
-    :param shape: shape of original array
-    :return: array with index counts
-    """
-    heat = np.zeros(shape)
-    np.add.at(heat, tuple(indices), 1)
-    return heat
-
-
-def _gather_indices_with_labels(indices: np.ndarray, labels: np.ndarray, shape: tuple) -> np.ndarray:
-    """
-    Count occurrence of indices per label.
-
-    :param indices: indices to array
-    :param labels: true labels
-    :param shape: shape of original array
-    :return: array with index counts
-    """
-    heats = np.zeros((labels.max() + 1,) + shape)
-    for i in range(labels.max() + 1):
-        heats[i] = _gather_indices(indices[..., np.where(labels == i)], shape)
-    return heats
+from antero.visual import heatmap as _heatmap, annotate_heatmap as _annotate_heatmap
 
 
 def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
@@ -42,22 +16,47 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
 
     :param som: self-organising map instance
     :param x: data samples
-    :param y: optional, heatmaps are produced for every label separately
+    :param y: true numerical labels, optional, figure for every label separately
     :return: None
     """
-    indices = som.project(x)
-
     if y is None:
         plt.figure()
         plt.title('Heatmap')
-        sns.heatmap(_gather_indices(indices, som.shape), vmin=0, cmap='magma')
+        sns.heatmap(som.heatmap(x), vmin=0, cmap='magma')
     else:
-        heats = _gather_indices_with_labels(indices, y, som.shape)
+        heats = som.heatmap(x, y)
         for i in range(heats.shape[0]):
             plt.figure()
             plt.title('Heatmap %d' % i)
             sns.heatmap(heats[i], vmin=0, cmap='magma')
             plt.pause(0.1)
+
+
+def labelmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
+    """
+    Produce a label map assigning a class to each node based on the most frequent class.
+
+    :param som: self-organising map instance
+    :param x: data samples
+    :param y: true numerical labels
+    :return: None
+    """
+    labels = som.labelmap(x, y)
+    n_labs = y.max() + 1
+
+    y_ticks = [str(i) for i in range(labels.shape[0])]
+    x_ticks = [str(i) for i in range(labels.shape[1])]
+
+    names = np.array([str(i) for i in range(n_labs)])
+    norm = matplotlib.colors.BoundaryNorm(np.linspace(-0.5, n_labs-0.5, n_labs+1), n_labs)
+    fmt = matplotlib.ticker.FuncFormatter(lambda z, pos: names[norm(z)])
+
+    plt.figure()
+    im, _ = _heatmap(
+        labels, y_ticks, x_ticks, cmap=plt.get_cmap('tab20', n_labs), norm=norm,
+        cbar_kw=dict(ticks=np.arange(n_labs), format=fmt),
+        cbarlabel='Class label'
+    )
 
 
 def umatrix(som: _BaseSOM, d: float = 1) -> None:
@@ -83,8 +82,7 @@ def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
     :param y: true class labels
     :return: None
     """
-    indices = som.project(x)
-    heats = _gather_indices_with_labels(indices, y, som.shape)
+    heats = som.heatmap(x, y)
 
     plt.figure(figsize=(7, 7))
     plt.suptitle('Class pies')
@@ -109,8 +107,7 @@ def class_image(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
     if y.max() > 2:
         raise ValueError('Maximum of three classes accepted!')
 
-    indices = som.project(x)
-    heats = _gather_indices_with_labels(indices, y, som.shape)
+    heats = som.heatmap(x, y)
     scale = np.max(np.sum(heats, axis=0))
 
     # Insert heatmaps into red and blue channels

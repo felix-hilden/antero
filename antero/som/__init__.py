@@ -67,6 +67,50 @@ class _BaseSOM:
             np.argmin(dist.reshape((-1, data.shape[0])), axis=0), self.shape
         ))
 
+    def _gather_indices(self, indices: np.ndarray) -> np.ndarray:
+        """
+        Count occurrence of indices.
+
+        :param indices: indices to array
+        :return: array with index counts
+        """
+        heat = np.zeros(self.shape)
+        np.add.at(heat, tuple(indices), 1)
+        return heat
+
+    def heatmap(self, x: np.ndarray, y: np.ndarray = None) -> np.ndarray:
+        """
+        Count occurrence of indices per label.
+
+        :param x: data samples
+        :param y: true numerical labels
+        :return: array with index counts
+        """
+        indices = self.project(x)
+
+        if y is None:
+            return self._gather_indices(indices)
+        else:
+            heats = np.zeros((y.max() + 1,) + self.shape)
+            for i in range(y.max() + 1):
+                heats[i] = self._gather_indices(indices[..., np.where(y == i)])
+            return heats
+
+    def labelmap(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """
+        Label each node with the most frequent class.
+
+        :param x: data samples
+        :param y: true numerical labels
+        :return: label map
+        """
+        heats = self.heatmap(x, y)
+        winner = np.argmax(heats, axis=0).astype(np.float)
+        empty = np.where(heats.sum(axis=0) == 0)
+
+        winner[empty] = np.nan
+        return winner
+
     def save(self, path: Path) -> None:
         """
         Save self as pickled object.
