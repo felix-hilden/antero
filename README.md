@@ -14,6 +14,7 @@ To use this SOM, no knowledge of Tensorflow is required. All data is consumed us
 * **visualisations and measures** - easy ways to view and measure results
     * U-matrix - visualise or measure map topology by average distance from a node to its neighbours
     * heatmap - visualise where input data is projected on the map, if labels are passed creates a figure for each class
+    * label map - visualise nodes categorically by their most-frequent class
     * pie charts - visualise data with labels, each node as a pie chart of classes
     * RGB images - visualise two or three classes and amount of data samples as brightness in an image
     * topological error - percentage of best-matching units for which the second-best-matching unit is not a neighbour
