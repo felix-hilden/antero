@@ -1,7 +1,32 @@
 import numpy as np
 import pandas as pd
 
-from pputils.exceptions import ProgrammingError
+from antero.exceptions import ProgrammingError
+
+
+def ordinal_cat(y: np.ndarray, n_categories: int):
+    """
+    Construct categories from ordinal data by clipping.
+
+    :param y: labels
+    :param n_categories: number of labels to produce
+    :return: categories
+    """
+    # Category codes by scaling
+    rng = y.max() - y.min()
+    reso = rng / n_categories
+    codes = np.floor((y - y.min()) / reso).astype(int)
+    codes[codes == n_categories] = n_categories - 1
+
+    # Category names as mean values
+    cats = (np.arange(0, n_categories) + 0.5) * reso + y.min()
+    n_decimal = -int(np.log10(reso))
+    if n_decimal < 0:
+        cats = np.round(cats, n_decimal).astype(int).astype(str)
+    else:
+        cats = np.round(cats, n_decimal).astype(str)
+
+    return pd.Categorical.from_codes(codes, cats)
 
 
 class OneHotEncoder:
