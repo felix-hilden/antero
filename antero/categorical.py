@@ -26,7 +26,7 @@ def ordinal_cat(y: np.ndarray, n_categories: int):
     else:
         cats = np.round(cats, n_decimal).astype(str)
 
-    return pd.Categorical.from_codes(codes, cats)
+    return pd.Series(pd.Categorical.from_codes(codes, cats))
 
 
 class OneHotEncoder:
