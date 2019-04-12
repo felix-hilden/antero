@@ -9,7 +9,7 @@ class OneHotEncoder:
     Simple one-hot encoder.
 
     Does not handle unseen categories: will default to the first category.
-    Does not invert all-zero arrays: will default to the first category.
+    Does not invert all-zero rows: will default to the first category.
     Does not handle NaN data.
 
     Example:
