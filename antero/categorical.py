@@ -20,11 +20,11 @@ def ordinal_cat(y: np.ndarray, n_categories: int) -> pd.Series:
 
     # Category names as mean values
     cats = (np.arange(0, n_categories) + 0.5) * reso + y.min()
-    n_decimal = -int(np.log10(reso))
-    if n_decimal < 0:
-        cats = np.round(cats, n_decimal).astype(int).astype(str)
-    else:
+    n_decimal = -int(np.log10(reso)) + 1
+    if n_decimal > 0:
         cats = np.round(cats, n_decimal).astype(str)
+    else:
+        cats = np.round(cats, n_decimal).astype(int).astype(str)
 
     return pd.Series(pd.Categorical.from_codes(codes, cats))
 
