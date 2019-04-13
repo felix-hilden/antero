@@ -9,7 +9,6 @@ from scipy.cluster.hierarchy import linkage, dendrogram as _dendrogram
 
 from antero.som import _BaseSOM
 from antero.som.measures import umatrix as _umatrix
-from antero.visual import heatmap as _heatmap
 
 
 def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
@@ -66,10 +65,8 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
     heats = som.heatmap(x, y)
     labels = som.labelmap(x, y)
 
-    y_ticks = [str(i) for i in range(labels.shape[0])]
-    x_ticks = [str(i) for i in range(labels.shape[1])]
-
-    norm = matplotlib.colors.BoundaryNorm(np.linspace(-0.5, n_labs-0.5, n_labs+1), n_labs)
+    bounds = np.linspace(-0.5, n_labs-0.5, n_labs+1)
+    norm = matplotlib.colors.BoundaryNorm(bounds, n_labs)
     fmt = matplotlib.ticker.FuncFormatter(
         lambda z, pos: names[norm(z)] + ' (' + str(int(heats[norm(z)].sum())) + ')'
     )
@@ -77,10 +74,12 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
 
     plt.figure()
     plt.suptitle(title)
-    im, _ = _heatmap(
-        labels, y_ticks, x_ticks, cmap=plt.get_cmap(cmap, n_labs), norm=norm,
-        cbar_kw=dict(ticks=np.arange(n_labs), format=fmt),
-        cbarlabel='Class label'
+    sns.heatmap(
+        labels, cmap=plt.get_cmap(cmap, n_labs), square=True, linewidths=1, vmax=n_labs,
+        cbar_kws=dict(
+            ticks=np.arange(n_labs), format=fmt,
+            boundaries=bounds, drawedges=True
+        ),
     )
 
 
