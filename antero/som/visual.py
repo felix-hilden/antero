@@ -9,6 +9,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram as _dendrogram
 
 from antero.som import _BaseSOM
 from antero.som.measures import umatrix as _umatrix
+from antero.visual import cat_heatmap
 
 
 def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
@@ -56,31 +57,22 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
         title = 'Label map: ' + y.name
         names = y.cat.categories.values
         y = y.cat.codes.values
-        n_labs = y.max() + 1
     else:
         n_labs = y.max() + 1
         names = np.array([str(i) for i in range(n_labs)])
         title = 'Label map'
 
-    heats = som.heatmap(x, y)
     labels = som.labelmap(x, y)
+    heats = som.heatmap(x, y)
+    names = np.array([
+        name + ' (%d)' % int(heats[i].sum()) for i, name in enumerate(names)
+    ])
 
-    bounds = np.linspace(-0.5, n_labs-0.5, n_labs+1)
-    norm = matplotlib.colors.BoundaryNorm(bounds, n_labs)
-    fmt = matplotlib.ticker.FuncFormatter(
-        lambda z, pos: names[norm(z)] + ' (' + str(int(heats[norm(z)].sum())) + ')'
-    )
     cmap = 'tab20' if not ordinal else 'copper'
 
     plt.figure()
     plt.suptitle(title)
-    sns.heatmap(
-        labels, cmap=plt.get_cmap(cmap, n_labs), square=True, linewidths=1, vmax=n_labs,
-        cbar_kws=dict(
-            ticks=np.arange(n_labs), format=fmt,
-            boundaries=bounds, drawedges=True
-        ),
-    )
+    cat_heatmap(labels, names, cmap, linewidths=1, square=True)
 
 
 def umatrix(som: _BaseSOM, d: float = 1) -> None:
@@ -156,3 +148,22 @@ def class_image(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
     plt.figure()
     plt.title('Class image')
     plt.imshow(image)
+
+
+def dendrogram(som: _BaseSOM) -> None:
+    """
+    Draw a dendrogram representation of the self-organising map.
+    TODO: with labels
+
+    :param som: self-organising map instance
+    :return: None
+    """
+    w = som.weights
+    z = linkage(w.reshape(-1, w.shape[-1]), optimal_ordering=True)
+
+    ix = np.indices(som.shape)
+    labels = [i for i in zip(*ix.reshape(ix.shape[0], -1))]
+    labels = np.array([', '.join(str(s) for s in lbl) for lbl in labels])
+
+    plt.figure()
+    _dendrogram(z, labels=labels, orientation='right')
