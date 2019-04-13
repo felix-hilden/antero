@@ -9,7 +9,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram as _dendrogram
 
 from antero.som import _BaseSOM
 from antero.som.measures import umatrix as _umatrix
-from antero.visual import heatmap as _heatmap, annotate_heatmap as _annotate_heatmap
+from antero.visual import heatmap as _heatmap
 
 
 def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
@@ -45,12 +45,14 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
     :return: None
     """
     if isinstance(y.dtype, pd.CategoricalDtype):
+        title = 'Label map: ' + y.name
         names = y.cat.categories.values
         y = y.cat.codes.values
         n_labs = y.max() + 1
     else:
         n_labs = y.max() + 1
         names = np.array([str(i) for i in range(n_labs)])
+        title = 'Label map'
 
     labels = som.labelmap(x, y)
 
@@ -59,9 +61,10 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
 
     norm = matplotlib.colors.BoundaryNorm(np.linspace(-0.5, n_labs-0.5, n_labs+1), n_labs)
     fmt = matplotlib.ticker.FuncFormatter(lambda z, pos: names[norm(z)])
+    cmap = 'tab20' if not ordinal else 'copper'
 
     plt.figure()
-    cmap = 'tab20' if not ordinal else 'copper'
+    plt.suptitle(title)
     im, _ = _heatmap(
         labels, y_ticks, x_ticks, cmap=plt.get_cmap(cmap, n_labs), norm=norm,
         cbar_kw=dict(ticks=np.arange(n_labs), format=fmt),
