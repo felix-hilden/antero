@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 from scipy.cluster.hierarchy import linkage, dendrogram as _dendrogram
@@ -25,7 +24,7 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
         heat = som.heatmap(x)
         plt.figure()
         plt.title('Heatmap (%d)' % heat.sum())
-        sns.heatmap(heat, vmin=0, cmap='magma')
+        sns.heatmap(heat, vmin=0, cmap='magma', xticklabels=False, yticklabels=False)
     else:
         if isinstance(y.dtype, pd.CategoricalDtype):
             title = 'Heatmap, ' + y.name + ': %s (%d)'
@@ -39,7 +38,7 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
         for i, name in enumerate(names):
             plt.figure()
             plt.title(title % (name, heats[i].sum()))
-            sns.heatmap(heats[i], vmin=0, cmap='magma')
+            sns.heatmap(heats[i], vmin=0, cmap='magma', xticklabels=False, yticklabels=False)
             plt.pause(0.1)
 
 
@@ -72,7 +71,8 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
 
     plt.figure()
     plt.suptitle(title)
-    cat_heatmap(labels, names, cmap, linewidths=1, square=True)
+    cat_heatmap(labels, names, cmap, linewidths=1, square=True,
+                xticklabels=False, yticklabels=False)
 
 
 def umatrix(som: _BaseSOM, d: float = 1) -> None:
@@ -86,6 +86,9 @@ def umatrix(som: _BaseSOM, d: float = 1) -> None:
     plt.figure()
     plt.title('U-matrix')
     plt.imshow(_umatrix(som, d), cmap='binary')
+    ax = plt.gca()
+    ax.axes.get_xaxis().set_ticks([])
+    ax.axes.get_yaxis().set_ticks([])
 
 
 def class_pies(som: _BaseSOM, x: np.ndarray, y) -> None:
