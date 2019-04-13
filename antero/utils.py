@@ -40,7 +40,12 @@ def series_like(data, like: pd.Series) -> pd.Series:
     :param like: Series with attributes to copy
     :return: Series
     """
-    return pd.Series(data, index=like.index, name=like.name)
+    if isinstance(data, np.ndarray):
+        return pd.Series(data, index=like.index, name=like.name)
+    elif isinstance(data, pd.Series):
+        s = pd.Series(data, name=like.name)
+        s.index = like.index
+        return s
 
 
 def df_like(data, like: pd.DataFrame) -> pd.DataFrame:
