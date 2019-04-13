@@ -4,7 +4,7 @@ import pandas as pd
 from antero.exceptions import ProgrammingError
 
 
-def ordinal_cat(y: np.ndarray, n_categories: int):
+def ordinal_cat(y: np.ndarray, n_categories: int) -> pd.Series:
     """
     Construct categories from ordinal data by clipping.
 
