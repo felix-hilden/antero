@@ -12,13 +12,13 @@ from antero.som.measures import umatrix as _umatrix
 from antero.visual import heatmap as _heatmap
 
 
-def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
+def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
     """
     Produce heatmaps indicating where samples land on a map.
 
     :param som: self-organising map instance
     :param x: data samples
-    :param y: true numerical labels, optional, figure for every label separately
+    :param y: labels, either pd.Series of pd.Categorical or np.ndarray of numerical labels
     :return: None
     """
     if y is None:
@@ -26,10 +26,18 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y: np.ndarray = None) -> None:
         plt.title('Heatmap')
         sns.heatmap(som.heatmap(x), vmin=0, cmap='magma')
     else:
+        if isinstance(y.dtype, pd.CategoricalDtype):
+            title = 'Heatmap, ' + y.name + ': %s'
+            names = y.cat.categories.values
+            y = y.cat.codes.values
+        else:
+            title = 'Heatmap: %s'
+            names = list(range(y.max() + 1))
+
         heats = som.heatmap(x, y)
-        for i in range(heats.shape[0]):
+        for i, name in enumerate(names):
             plt.figure()
-            plt.title('Heatmap %d' % i)
+            plt.title(title % name)
             sns.heatmap(heats[i], vmin=0, cmap='magma')
             plt.pause(0.1)
 
