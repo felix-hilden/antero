@@ -93,26 +93,34 @@ def umatrix(som: _BaseSOM, d: float = 1) -> None:
     plt.imshow(_umatrix(som, d), cmap='binary')
 
 
-def class_pies(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
+def class_pies(som: _BaseSOM, x: np.ndarray, y) -> None:
     """
     Plot self-organising map as a set of pie charts in terms of labels at each node.
     Very inefficient for large maps as it produces a subplot for each node.
 
     :param som: self-organising map instance
     :param x: data samples
-    :param y: true class labels
+    :param y: labels, either pd.Series of pd.Categorical or np.ndarray of numerical labels
     :return: None
     """
+    if isinstance(y.dtype, pd.CategoricalDtype):
+        title = 'Class pies: ' + y.name
+        names = y.cat.categories.values
+        y = y.cat.codes.values
+    else:
+        names = np.arange(0, y.max()+1)
+        title = 'Class pies'
+
     heats = som.heatmap(x, y)
 
     plt.figure(figsize=(7, 7))
-    plt.suptitle('Class pies')
+    plt.suptitle(title)
     grid = GridSpec(*som.shape)
     for iy in range(som.shape[0]):
         for ix in range(som.shape[1]):
             plt.subplot(grid[iy, ix])
             p, _ = plt.pie(heats[:, iy, ix], radius=1.4)
-    plt.legend(p, np.arange(0, y.max()+1), ncol=1)
+    plt.legend(p, names, ncol=1)
 
 
 def class_image(som: _BaseSOM, x: np.ndarray, y: np.ndarray) -> None:
