@@ -22,22 +22,23 @@ def heatmap(som: _BaseSOM, x: np.ndarray, y=None) -> None:
     :return: None
     """
     if y is None:
+        heat = som.heatmap(x)
         plt.figure()
-        plt.title('Heatmap')
-        sns.heatmap(som.heatmap(x), vmin=0, cmap='magma')
+        plt.title('Heatmap (%d)' % heat.sum())
+        sns.heatmap(heat, vmin=0, cmap='magma')
     else:
         if isinstance(y.dtype, pd.CategoricalDtype):
-            title = 'Heatmap, ' + y.name + ': %s'
+            title = 'Heatmap, ' + y.name + ': %s (%d)'
             names = y.cat.categories.values
             y = y.cat.codes.values
         else:
-            title = 'Heatmap: %s'
+            title = 'Heatmap: %s n=%d'
             names = list(range(y.max() + 1))
 
         heats = som.heatmap(x, y)
         for i, name in enumerate(names):
             plt.figure()
-            plt.title(title % name)
+            plt.title(title % (name, heats[i].sum()))
             sns.heatmap(heats[i], vmin=0, cmap='magma')
             plt.pause(0.1)
 
@@ -62,13 +63,16 @@ def labelmap(som: _BaseSOM, x: np.ndarray, y, ordinal: bool = False) -> None:
         names = np.array([str(i) for i in range(n_labs)])
         title = 'Label map'
 
+    heats = som.heatmap(x, y)
     labels = som.labelmap(x, y)
 
     y_ticks = [str(i) for i in range(labels.shape[0])]
     x_ticks = [str(i) for i in range(labels.shape[1])]
 
     norm = matplotlib.colors.BoundaryNorm(np.linspace(-0.5, n_labs-0.5, n_labs+1), n_labs)
-    fmt = matplotlib.ticker.FuncFormatter(lambda z, pos: names[norm(z)])
+    fmt = matplotlib.ticker.FuncFormatter(
+        lambda z, pos: names[norm(z)] + ' (' + str(int(heats[norm(z)].sum())) + ')'
+    )
     cmap = 'tab20' if not ordinal else 'copper'
 
     plt.figure()
@@ -108,10 +112,13 @@ def class_pies(som: _BaseSOM, x: np.ndarray, y) -> None:
         names = y.cat.categories.values
         y = y.cat.codes.values
     else:
-        names = np.arange(0, y.max()+1)
+        names = np.arange(0, y.max()+1).astype(int).astype(str)
         title = 'Class pies'
 
     heats = som.heatmap(x, y)
+    names = np.array([
+        name + ' (%d)' % int(heats[i].sum()) for i, name in enumerate(names)
+    ])
 
     plt.figure(figsize=(7, 7))
     plt.suptitle(title)
