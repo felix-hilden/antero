@@ -45,6 +45,7 @@ class SelfOrganisingMap(_BaseSOM):
 
         x = x.astype(np.float64)
 
+        batches = x.shape[0] // batch_size
         if x.shape[0] % batch_size != 0:
             raise ValueError('Bad batch_size, last batch would be incomplete!')
 
@@ -66,40 +67,38 @@ class SelfOrganisingMap(_BaseSOM):
                 data = data.batch(batch_size, drop_remainder=True)
                 data = data.make_one_shot_iterator().get_next()
 
-            with tf.name_scope('winner'):
-                diff = weights - data
-                dist = tf.reduce_sum(diff ** 2, axis=-1, keepdims=True)
-                w_ix = tf.argmin(tf.reshape(dist, (self.n_nodes, data.shape[0])), axis=0)
-                winner_op = tf.convert_to_tensor(tf.unravel_index(w_ix, self.shape))
+            def train_loop(w):
+                with tf.name_scope('winner'):
+                    diff = w - data
+                    dist = tf.reduce_sum(diff ** 2, axis=-1, keepdims=True)
+                    w_ix = tf.argmin(tf.reshape(dist, (self.n_nodes, data.shape[0])), axis=0)
+                    winner_op = tf.convert_to_tensor(tf.unravel_index(w_ix, self.shape))
 
-            with tf.name_scope('update'):
-                idx_diff = indices - tf.reshape(tf.cast(
-                    winner_op, dtype=tf.float64
-                ), shape=self._neighbour_shape)
-                idx_dist = tf.norm(idx_diff, axis=0)
+                with tf.name_scope('update'):
+                    idx_diff = indices - tf.reshape(tf.cast(
+                        winner_op, dtype=tf.float64
+                    ), shape=self._neighbour_shape)
+                    idx_dist = tf.norm(idx_diff, axis=0)
 
-                l_rate = _learning_rate(curr_epoch, self.max_epochs)
-                n_hood = _neighbourhood(
-                    idx_dist, curr_epoch, self.max_epochs, max(self.shape)
-                )
+                    l_rate = _learning_rate(curr_epoch, self.max_epochs)
+                    n_hood = _neighbourhood(
+                        idx_dist, curr_epoch, self.max_epochs, max(self.shape)
+                    )
 
-                update = diff * l_rate * tf.expand_dims(n_hood, axis=-1)
-                update_op = weights.assign(
-                    weights - self._initial_lr * tf.reduce_sum(update, axis=-2, keepdims=True)
-                )
+                    update = diff * l_rate * tf.expand_dims(n_hood, axis=-1)
+                    return w - self._initial_lr * tf.reduce_sum(update, axis=-2, keepdims=True)
+
+            n_weights = tf.while_loop(lambda _: True, train_loop, (weights,), maximum_iterations=batches)
+            update_op = weights.assign(n_weights)
 
             init = tf.global_variables_initializer()
 
-        # Initialise all variables
         sess.run(init)
 
-        batches = x.shape[0] // batch_size
         for i in tqdm(range(epochs)):
-            epoch = self.epochs + i
-            for b in range(batches):
-                sess.run(update_op, feed_dict={
-                    curr_epoch: epoch
-                })
+            sess.run(update_op, feed_dict={
+                curr_epoch: self.epochs + i
+            })
 
         self._weights = sess.run(weights)
         self._epochs += epochs
