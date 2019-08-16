@@ -51,8 +51,8 @@ class SelfOrganisingMap(_BaseSOM):
         diff = self.indices - points.reshape(self._neighbour_shape)
         return np.linalg.norm(diff, axis=0)
 
-    def train(self, x: np.ndarray, epochs: int,
-              batch_size: int = 1, shuffle: bool = False) -> None:
+    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1,
+              shuffle: bool = False, verbose: bool = False) -> None:
         """
         Train SOM with batches. Count epochs starting from first train call.
 
@@ -60,6 +60,7 @@ class SelfOrganisingMap(_BaseSOM):
         :param epochs: number of epochs to train
         :param batch_size: number of training examples per step
         :param shuffle: shuffle data each epoch
+        :param verbose: display a progress bar
         :return: None
         """
         if self._weights is None:
@@ -68,7 +69,7 @@ class SelfOrganisingMap(_BaseSOM):
         if x.shape[0] % batch_size != 0:
             raise ValueError('Bad batch_size, last batch would be incomplete!')
 
-        for i in tqdm(range(epochs)):
+        for i in tqdm(range(epochs)) if verbose else range(epochs):
             epoch = self.epochs + i
             rate = self.learning_rate(epoch)
             if shuffle:

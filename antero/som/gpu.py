@@ -29,8 +29,8 @@ class SelfOrganisingMap(_BaseSOM):
         else:
             return tf.convert_to_tensor(self._weights)
 
-    def train(self, x: np.ndarray, epochs: int,
-              batch_size: int = 1, shuffle: bool = False) -> None:
+    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1,
+              shuffle: bool = False, verbose: bool = False) -> None:
         """
         Create training graph and train SOM.
 
@@ -38,6 +38,7 @@ class SelfOrganisingMap(_BaseSOM):
         :param epochs: number of epochs to train
         :param batch_size: number of training examples per step
         :param shuffle: shuffle data in training
+        :param verbose: display a progress bar
         :return: None
         """
         graph = tf.Graph()
@@ -95,7 +96,7 @@ class SelfOrganisingMap(_BaseSOM):
 
         sess.run(init)
 
-        for i in tqdm(range(epochs)):
+        for i in tqdm(range(epochs)) if verbose else range(epochs):
             sess.run(update_op, feed_dict={
                 curr_epoch: self.epochs + i
             })
