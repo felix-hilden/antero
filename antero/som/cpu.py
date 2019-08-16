@@ -2,7 +2,7 @@ import numpy as np
 
 from tqdm import tqdm
 from sklearn.utils import shuffle as shuffle_data
-from antero.som import _BaseSOM
+from antero.som import _BaseSOM, load
 
 
 def _make_learning_rate(max_epochs: int) -> callable:
@@ -90,6 +90,6 @@ class SelfOrganisingMap(_BaseSOM):
 
     @classmethod
     def load(cls, path) -> 'SelfOrganisingMap':
-        som = super().load(path)
+        som = load(cls, path)
         som._init_members()
         return som

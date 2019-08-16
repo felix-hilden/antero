@@ -4,6 +4,16 @@ from pathlib import Path
 import numpy as np
 
 
+def load(type_: type, path: Path):
+    with open(str(path), 'rb') as f:
+        d = pickle.load(f)
+
+    som = type_(d['w'].shape[:-2], d['w'].shape[-1], max_epochs=d['m'], init=d['i'], learning_rate=d['r'])
+    som._weights = d['w']
+    som._epochs = d['e']
+    return som
+
+
 class _BaseSOM:
     def __init__(self, shape: tuple, features: int, *_,
                  max_epochs: int = None, init: str = 'uniform', learning_rate: float = 0.1):
@@ -130,13 +140,7 @@ class _BaseSOM:
 
     @classmethod
     def load(cls, path: Path) -> '_BaseSOM':
-        with open(str(path), 'rb') as f:
-            d = pickle.load(f)
-
-        som = cls(d['w'].shape[:-2], d['w'].shape[-1], max_epochs=d['m'], init=d['i'], learning_rate=d['r'])
-        som._weights = d['w']
-        som._epochs = d['e']
-        return som
+        return load(cls, path)
 
     def __repr__(self):
         return ''.join(str(s) for s in [
