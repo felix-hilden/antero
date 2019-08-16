@@ -1,6 +1,6 @@
 import unittest
-from pputils.categorical import OneHotEncoder, NanHotEncoder, CatHotEncoder
-from pputils.exceptions import ProgrammingError
+from antero.categorical import OneHotEncoder, NanHotEncoder, CatHotEncoder
+from antero.exceptions import ProgrammingError
 
 import numpy as np
 import pandas as pd
