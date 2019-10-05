@@ -1,5 +1,20 @@
-# PyCharm project files
-.idea/*
+# Python
+*.py[cod]
+**__pycache__/
+build/
+dist/
+*.egg-info/
 
-# pip installation
-*.egg-info/*
+# PyCharm
+.idea/
+
+# Sphinx
+docs/build
+
+# Environments
+.env
+.venv
+env/
+venv/
+env.bak/
+venv.bak/
