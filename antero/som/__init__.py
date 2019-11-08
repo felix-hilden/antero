@@ -15,8 +15,14 @@ def load(type_: type, path: Path):
 
 
 class _BaseSOM:
-    def __init__(self, shape: tuple, features: int, *_,
-                 max_epochs: int = None, init: str = 'uniform', learning_rate: float = 0.1):
+    def __init__(
+            self,
+            shape: tuple,
+            features: int, *_,
+            max_epochs: int = None,
+            init: str = 'uniform',
+            learning_rate: float = 0.1
+    ):
         """
         Self-organising map.
 
