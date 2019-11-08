@@ -87,7 +87,7 @@ class SelfOrganisingMap(_BaseSOM):
                     )
 
                     update = diff * l_rate * tf.expand_dims(n_hood, axis=-1)
-                    return w - self._initial_lr * tf.reduce_sum(update, axis=-2, keepdims=True)
+                    return w - self._initial_lr * tf.reduce_mean(update, axis=-2, keepdims=True)
 
             n_weights = tf.while_loop(lambda _: True, train_loop, (weights,), maximum_iterations=batches)
             update_op = weights.assign(n_weights)

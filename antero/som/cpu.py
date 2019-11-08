@@ -84,7 +84,7 @@ class SelfOrganisingMap(_BaseSOM):
                 ))
                 factor = self.neighbourhood(self._idx_distances(winner), epoch)
                 update = diff * rate * np.expand_dims(factor, axis=-1)
-                self._weights -= self._initial_lr * np.sum(update, axis=-2, keepdims=True)
+                self._weights -= self._initial_lr * np.mean(update, axis=-2, keepdims=True)
 
         # Record elapsed epochs
         self._epochs += epochs
