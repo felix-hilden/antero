@@ -5,17 +5,25 @@ from sklearn.utils import shuffle as shuffle_data
 from antero.som import _BaseSOM, load
 
 
-def _make_learning_rate(max_epochs: int) -> callable:
-    def _learning_rate(t: int) -> float:
-        return np.exp(-4 * t / max_epochs)
+def _make_learning_rate(max_epochs: int, lr_decay: float = 1) -> callable:
+    c = -4 / max_epochs * lr_decay
+
+    def _learning_rate(epoch: int) -> float:
+        return np.exp(c * epoch)
     return _learning_rate
 
 
-def _make_neighbourhood(shape: tuple, max_epochs: int) -> callable:
-    def _neighbourhood(r: np.ndarray, t: int):
+def _make_neighbourhood(
+        shape: tuple,
+        max_epochs: int,
+        nbh_width: float = 1,
+        nbh_decay: float = 1
+) -> callable:
+    c = 4 / max(shape) / nbh_width
+
+    def _neighbourhood(r: np.ndarray, epoch: int):
         return np.exp(
-            - (2 * r / max(shape)) ** 2
-            * (max_epochs / (max_epochs - t)) ** 3
+            - (c * r / (1 - epoch / max_epochs) ** nbh_decay) ** 2
         )
     return _neighbourhood
 
@@ -28,8 +36,16 @@ class SelfOrganisingMap(_BaseSOM):
             self._weights = np.random.normal(size=(*self.shape, 1, self.features))
 
     def _init_members(self):
-        self.neighbourhood = _make_neighbourhood(self.shape, self.max_epochs)
-        self.learning_rate = _make_learning_rate(self.max_epochs)
+        self.neighbourhood = _make_neighbourhood(
+            self.shape,
+            self.max_epochs,
+            self._neighbourhood_width,
+            self._neighbourhood_decay
+        )
+        self.learning_rate = _make_learning_rate(
+            self.max_epochs,
+            self._learning_rate_decay
+        )
         self.indices = np.expand_dims(np.indices(self.shape), axis=-1)
 
     def _on_first_train(self) -> None:

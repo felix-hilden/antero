@@ -5,16 +5,27 @@ from tqdm import tqdm
 from antero.som import _BaseSOM
 
 
-def _learning_rate(epoch: tf.placeholder, max_epochs: int):
+def _place_learning_rate(
+        epoch: tf.placeholder,
+        max_epochs: int,
+        lr_decay: float = 1
+):
     with tf.name_scope('learning_rate'):
-        return tf.exp(-4 * epoch / max_epochs)
+        return tf.exp(-4 / max_epochs * lr_decay * epoch )
 
 
-def _neighbourhood(r: tf.placeholder, epoch: tf.placeholder, max_epochs: int, size: int):
+def _place_neighbourhood(
+        shape: tuple,
+        r: tf.placeholder,
+        epoch: tf.placeholder,
+        max_epochs: int,
+        nbh_width: float = 1,
+        nbh_decay: float = 1
+):
+    c = 4 / max(shape) / nbh_width
     with tf.name_scope('neighbourhood'):
         return tf.exp(
-            - (2 * r / size) ** 2
-            * (max_epochs / (max_epochs - epoch)) ** 3
+            - (c * r / (1 - epoch / max_epochs) ** nbh_decay) ** 2
         )
 
 
@@ -29,8 +40,14 @@ class SelfOrganisingMap(_BaseSOM):
         else:
             return tf.convert_to_tensor(self._weights)
 
-    def train(self, x: np.ndarray, epochs: int, batch_size: int = 1,
-              shuffle: bool = False, verbose: bool = False) -> None:
+    def train(
+            self,
+            x: np.ndarray,
+            epochs: int,
+            batch_size: int = 1,
+            shuffle: bool = False,
+            verbose: bool = False
+    ) -> None:
         """
         Create training graph and train SOM.
 
@@ -81,9 +98,18 @@ class SelfOrganisingMap(_BaseSOM):
                     ), shape=self._neighbour_shape)
                     idx_dist = tf.norm(idx_diff, axis=0)
 
-                    l_rate = _learning_rate(curr_epoch, self.max_epochs)
-                    n_hood = _neighbourhood(
-                        idx_dist, curr_epoch, self.max_epochs, max(self.shape)
+                    l_rate = _place_learning_rate(
+                        curr_epoch,
+                        self.max_epochs,
+                        self._learning_rate_decay
+                    )
+                    n_hood = _place_neighbourhood(
+                        self.shape,
+                        idx_dist,
+                        curr_epoch,
+                        self.max_epochs,
+                        self._neighbourhood_width,
+                        self._neighbourhood_decay
                     )
 
                     update = diff * l_rate * tf.expand_dims(n_hood, axis=-1)

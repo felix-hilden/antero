@@ -8,7 +8,16 @@ def load(type_: type, path: Path):
     with open(str(path), 'rb') as f:
         d = pickle.load(f)
 
-    som = type_(d['w'].shape[:-2], d['w'].shape[-1], max_epochs=d['m'], init=d['i'], learning_rate=d['r'])
+    som = type_(
+        d['w'].shape[:-2],
+        d['w'].shape[-1],
+        max_epochs=d['m'],
+        init=d['i'],
+        learning_rate=d['r'],
+        learning_rate_decay=d['lrd'],
+        neighbourhood_width=d['nhw'],
+        neighbourhood_decay=d['nhd']
+    )
     som._weights = d['w']
     som._epochs = d['e']
     return som
@@ -21,7 +30,10 @@ class _BaseSOM:
             features: int, *_,
             max_epochs: int = None,
             init: str = 'uniform',
-            learning_rate: float = 0.1
+            learning_rate: float = 0.1,
+            learning_rate_decay: float = 1,
+            neighbourhood_width: float = 1,
+            neighbourhood_decay: float = 1
     ):
         """
         Self-organising map.
@@ -33,6 +45,9 @@ class _BaseSOM:
         :param init: method of weight initialisation. 'uniform' for drawing from an uniform
             distribution between 0..1, 'normal' for drawing from X~N(0,1)
         :param learning_rate: initial learning rate multiplier
+        :param learning_rate_decay: rate with which the learning rate decays
+        :param neighbourhood_width: multiplier to neighbourhood width
+        :param neighbourhood_decay: rate with which the neighbourhood decays
         """
         self._weights = None
 
@@ -43,6 +58,9 @@ class _BaseSOM:
         self._epochs = 0
         self._max_epochs = max_epochs
         self._initial_lr = learning_rate
+        self._learning_rate_decay = learning_rate_decay
+        self._neighbourhood_width = neighbourhood_width
+        self._neighbourhood_decay = neighbourhood_decay
 
         if init not in ['uniform', 'normal']:
             raise AssertionError('Unknown weights initialiser type "%s"!' % init)
@@ -139,7 +157,10 @@ class _BaseSOM:
             'e': self._epochs,
             'm': self._max_epochs,
             'r': self._initial_lr,
-            'i': self._initialiser
+            'i': self._initialiser,
+            'lrd': self._learning_rate_decay,
+            'nhw': self._neighbourhood_width,
+            'nhd': self._neighbourhood_decay
         }
         with open(str(path), 'wb') as f:
             pickle.dump(d, f)
